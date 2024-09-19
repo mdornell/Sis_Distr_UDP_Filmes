@@ -12,40 +12,63 @@ import javax.swing.JOptionPane;
  */
 public class FilmesForm extends javax.swing.JFrame {
 
-    private String[] nomes = {
-            "Lucas Almeida", 
-            "Mariana Costa", 
-            "Rafael Pereira", 
-            "Ana Silva", 
-            "Bruno Oliveira", 
-            "Carolina Santos", 
-            "Diego Martins", 
-            "Fernanda Rocha", 
-            "Guilherme Souza", 
-            "Júlia Mendes"
-        };
-    
+    private final String[] nomes;
+    private final String[] filmes;
+
     public FilmesForm() {
+        this.nomes = new String[]{"Lucas Almeida",
+            "Mariana Costa",
+            "Rafael Pereira",
+            "Ana Silva",
+            "Bruno Oliveira",
+            "Carolina Santos",
+            "Diego Martins",
+            "Fernanda Rocha",
+            "Guilherme Souza",
+            "Júlia Mendes"};
+
+        this.filmes = new String[]{
+            "O Poderoso Chefão",
+            "Clube da Luta",
+            "Pulp Fiction: Tempo de Violência",
+            "A Origem",
+            "O Senhor dos Anéis: A Sociedade do Anel",
+            "Matrix",
+            "O Silêncio dos Inocentes",
+            "Forrest Gump: O Contador de Histórias",
+            "A Vida é Bela",
+            "O Resgate do Soldado Ryan",
+            "Gladiador",
+            "O Rei Leão",
+            "Vingadores: Ultimato",
+            "Jurassic Park: Parque dos Dinossauros",
+            "Star Wars: O Império Contra-Ataca",
+            "Interestelar",
+            "Corra!",
+            "A Forma da Água",
+            "Cidadão Kane",
+            "Parasita"
+        };
         initComponents();
-        
+
         MeuCliente cliente = new MeuCliente();
-        
+
         lblID.setText(cliente.getNomeDNS());
-        
+
         String nomeSelecionado = (String) JOptionPane.showInputDialog(
-            null, 
-            "Selecione um nome:", 
-            "Lista de Nomes", 
-            JOptionPane.QUESTION_MESSAGE, 
-            null, 
-            nomes, 
-            nomes[0]
+                null,
+                "Selecione um nome:",
+                "Lista de Nomes",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                nomes,
+                nomes[0]
         );
 
         if (nomeSelecionado != null) {
             JOptionPane.showMessageDialog(null, "Você selecionou: " + nomeSelecionado);
         }
-        
+
         lblServidor.setText(nomeSelecionado);
     }
 
@@ -173,56 +196,57 @@ public class FilmesForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInfoActionPerformed
-        JOptionPane.showMessageDialog(null,"Valores a serem usados: \n1 = ruim\n 2 = bom\n 3 = ótimo\n");
+        JOptionPane.showMessageDialog(null, "Valores a serem usados: \n1 = ruim\n 2 = bom\n 3 = ótimo\n");
     }//GEN-LAST:event_btnInfoActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        int filmeInd = cbFilmes.getSelectedIndex();
         int nota = Integer.parseInt(spinNota.getValue().toString());
         int op = cbOpiton.getSelectedIndex();
-        
-        String msg = null;
-        
-        if(filmeInd == 0){
+
+        // Verificar se o filme foi selecionado corretamente
+        if (cbFilmes.getSelectedIndex() == 0 && op == 1) {
             JOptionPane.showMessageDialog(null, "Favor informar o FILME a ser avaliado");
             cbFilmes.requestFocus();
-        }else{
-            String nomeFilme = cbFilmes.getSelectedItem().toString();
-            msg = lblServidor.getText() + " avaliou o filme '" + nomeFilme + "' com " + nota ;
+            return; // Sair da execução se a condição de erro for atendida
         }
-        
+
+        String nomeFilme = cbFilmes.getSelectedItem().toString();
+        String cliente = lblServidor.getText();
+        int clienteIdx = clienteIndex(cliente);
+
+        // Montar a mensagem para o servidor
+        String msg = String.format("%s avaliou o filme '%s' com %d;%d;%d;%d;%d",
+                cliente, nomeFilme, nota,
+                (cbFilmes.getSelectedIndex() - 1),
+                clienteIdx, nota, op);
+
+        // Enviar a mensagem ao servidor e obter a resposta
         MeuCliente cli = new MeuCliente();
-        msg = msg 
-                + ";"+ (filmeInd - 1) 
-                + ";" + clienteIndex(lblServidor.getText()) 
-                + ";" + nota
-                + ";" + op;
-        
+        System.out.println("MSG : " +msg);
         String resposta = cli.enviarMsg(msg);
-        
-         jTextArea1.setText(resposta);
+
+        // Exibir a resposta no TextArea
+        jTextArea1.setText(resposta);
     }//GEN-LAST:event_jButton1ActionPerformed
-   
-    private int clienteIndex(String cli){
-        String[] nomes = {"Lucas Almeida"
-                , "Mariana Costa"
-                , "Rafael Pereira"
-                , "Ana Silva"
-                , "Bruno Oliveira"
-                , "Carolina Santos"
-                , "Diego Martins"
-                , "Fernanda Rocha"
-                , "Guilherme Souza"
-                , "Júlia Mendes"};
-        
-        
-        for(int i = 0; i< 10;i++){
-            if(cli.equals(nomes[i])){
+
+    private int clienteIndex(String cli) {
+        for (int i = 0; i < 10; i++) {
+            if (cli.equals(this.nomes[i])) {
                 return i;
             }
         }
         return 0;
     }
+
+    private int filmeIndex(String fil) {
+        for (int i = 0; i < 10; i++) {
+            if (fil.equals(this.filmes[i])) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     /**
      * @param args the command line arguments
      */

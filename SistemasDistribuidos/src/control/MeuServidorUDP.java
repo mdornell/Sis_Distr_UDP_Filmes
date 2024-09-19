@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 
 public class MeuServidorUDP {
+
     private static BaseDeDados bd = null;
 
     public static void main(String[] args) {
@@ -19,14 +20,14 @@ public class MeuServidorUDP {
                 aSocket.receive(request);
 
                 String mensagem = new String(request.getData(), 0, request.getLength());
-                
+
                 // [0:Mensagem; 1:IndexFilme; 2:indexCliente; 3:Nota; 4:Opção]
                 String[] msgs = mensagem.split(";");
 
                 String msg = executarOp(msgs);
 
-                bd.insere(msg.toUpperCase()); 
-                String resposta = bd.le(); 
+                bd.insere(msg.toUpperCase());
+                String resposta = bd.le();
 
                 byte[] todasMsg = resposta.getBytes();
                 DatagramPacket reply = new DatagramPacket(todasMsg, todasMsg.length, request.getAddress(), request.getPort());
@@ -38,7 +39,9 @@ public class MeuServidorUDP {
         } catch (IOException e) {
             System.out.println("Servidor - Input Output: " + e.getMessage());
         } finally {
-            if (aSocket != null) aSocket.close();
+            if (aSocket != null) {
+                aSocket.close();
+            }
         }
     }
 
@@ -47,30 +50,33 @@ public class MeuServidorUDP {
         int indCli = Integer.parseInt(msgs[2]);
         int nota = Integer.parseInt(msgs[3]);
         int op = Integer.parseInt(msgs[4]);
-        System.out.println("index F : " + indFilme+
-                                      "index C : " + indCli +
-                                       "nota : "+ nota+
-                                        "op : " + op);
+
+        // Exibir as informações recebidas para depuração
+        System.out.println(String.format("Index Filme: %d, Index Cliente: %d, Nota: %d, Opção: %d",
+                indFilme, indCli, nota, op));
 
         String msg = "";
 
         switch (op) {
-            case 0: // Solicita ao servidor um título de filme para a avaliação.
+            case 0: // Solicitar ao servidor um título de filme para avaliação
                 msg = bd.filmeNaoAvaliado(indCli);
                 break;
-            case 1: // Registra a nota de avaliação do usuário para um filme específico.
+            case 1: // Registrar a nota de avaliação do usuário para um filme específico
                 bd.avaliarFilme(indCli, indFilme, nota);
-                msg = "Filme avaliado com sucesso!";
+                msg = bd.nomeCliente(indCli) + "avaliou : " + bd.nomeFilme(indFilme) + "com nota : "+ nota;
                 break;
-            case 2: // Solicita ao servidor uma recomendação de filme ou série (não implementado).
-                // Você pode implementar a lógica de recomendação aqui.
-                msg = "Recomendação de filme não implementada.";
+            case 2: // Solicitar recomendação de filme ou série
+                msg = bd.recomendarFilme(indCli);
                 break;
-            case 3: // Solicita lista de avaliações feitas pelo próprio usuário.
+            case 3: // Solicitar lista de avaliações feitas pelo usuário
                 msg = bd.listarFilmesAvaliados(indCli);
+                break;
+            default: // Caso op seja inválido, retornar uma mensagem de erro
+                msg = "Operação inválida!";
                 break;
         }
 
         return msg;
     }
+
 }
