@@ -60,26 +60,26 @@ public class BaseDeDados {
 
     public String nomeFilme(int idFilme) {
         String[] filmes = {
-            "O Poderoso Chefão",
-            "Clube da Luta",
-            "Pulp Fiction: Tempo de Violência",
-            "A Origem",
-            "O Senhor dos Anéis: A Sociedade do Anel",
-            "Matrix",
-            "O Silêncio dos Inocentes",
-            "Forrest Gump: O Contador de Histórias",
-            "A Vida é Bela",
-            "O Resgate do Soldado Ryan",
-            "Gladiador",
-            "O Rei Leão",
-            "Vingadores: Ultimato",
-            "Jurassic Park: Parque dos Dinossauros",
-            "Star Wars: O Império Contra-Ataca",
-            "Interestelar",
-            "Corra!",
-            "A Forma da Água",
-            "Cidadão Kane",
-            "Parasita"
+                "O Poderoso Chefão",
+                "Clube da Luta",
+                "Pulp Fiction: Tempo de Violência",
+                "A Origem",
+                "O Senhor dos Anéis: A Sociedade do Anel",
+                "Matrix",
+                "O Silêncio dos Inocentes",
+                "Forrest Gump: O Contador de Histórias",
+                "A Vida é Bela",
+                "O Resgate do Soldado Ryan",
+                "Gladiador",
+                "O Rei Leão",
+                "Vingadores: Ultimato",
+                "Jurassic Park: Parque dos Dinossauros",
+                "Star Wars: O Império Contra-Ataca",
+                "Interestelar",
+                "Corra!",
+                "A Forma da Água",
+                "Cidadão Kane",
+                "Parasita"
         };
 
         return filmes[idFilme];
@@ -87,86 +87,109 @@ public class BaseDeDados {
 
     public String nomeCliente(int idCli) {
         String[] s = {
-            "Lucas Almeida",
-            "Mariana Costa",
-            "Rafael Pereira",
-            "Ana Silva",
-            "Bruno Oliveira",
-            "Carolina Santos",
-            "Diego Martins",
-            "Fernanda Rocha",
-            "Guilherme Souza",
-            "Júlia Mendes"
+                "Lucas Almeida",
+                "Mariana Costa",
+                "Rafael Pereira",
+                "Ana Silva",
+                "Bruno Oliveira",
+                "Carolina Santos",
+                "Diego Martins",
+                "Fernanda Rocha",
+                "Guilherme Souza",
+                "Júlia Mendes"
         };
 
         // Verifica se o idCli está dentro dos limites do array
         if (idCli >= 0 && idCli < s.length) {
-            return s[idCli];  // Retorna o nome correspondente ao índice
+            return s[idCli]; // Retorna o nome correspondente ao índice
         } else {
-            return "Cliente não encontrado";  // Caso o índice seja inválido
+            return "Cliente não encontrado"; // Caso o índice seja inválido
         }
     }
 
     public String recomendarFilme(int idCli) {
-        // Lista de distâncias euclidianas para cada cliente
+        List<String> recomendacoes = new ArrayList<>();
         double menorDistancia = Double.MAX_VALUE;
-        int idMaisSemelhante = -1;
+        int idMenorDistancia = -1; // Para garantir que temos um valor válido
 
-        // Calcular a distância entre idCli e todos os outros clientes
+        // Encontra o usuário mais próximo com a menor distância euclidiana
         for (int i = 0; i < 10; i++) {
-            if (i != idCli) {
+            if (i != idCli && usuarioFezAvaliacao(i)) { // Verifica se o usuário fez alguma avaliação
                 double distancia = calculoEuclidiano(idCli, i);
+                System.out.println("Distância entre cliente " + idCli + " e cliente " + i + ": " + distancia); // Print
+                                                                                                               // da
+                                                                                                               // distância
                 if (distancia < menorDistancia) {
                     menorDistancia = distancia;
-                    idMaisSemelhante = i;
+                    idMenorDistancia = i;
                 }
             }
         }
 
-        // Se nenhum cliente semelhante foi encontrado
-        if (idMaisSemelhante == -1) {
-            return "Nenhuma recomendação disponível para o cliente " + nomeCliente(idCli);
+        // Verificação de usuário mais próximo
+        if (idMenorDistancia == -1) {
+            return "Nenhum usuário fez avaliações suficientes para recomendar ao cliente " + idCli;
         }
 
-        // Encontrar um filme que o cliente não tenha avaliado, mas o cliente semelhante tenha dado uma boa avaliação
-        int filmeRecomendado = -1;
-        int notaMaisAlta = 0;
+        // System.out.println("Usuário mais próximo de " + idCli + " é o usuário " +
+        // idMenorDistancia + " com distância: " + menorDistancia);
 
+        // Print das avaliações do cliente atual e do usuário mais próximo
+        // System.out.println("Avaliações do cliente " + idCli + ":");
         for (int i = 0; i < 20; i++) {
-            if (mtz[idCli][i] == 0 && mtz[idMaisSemelhante][i] > 0) { // Cliente não avaliou, mas o cliente semelhante sim
-                if (mtz[idMaisSemelhante][i] > notaMaisAlta) { // Verifica se é a maior nota já encontrada
-                    notaMaisAlta = mtz[idMaisSemelhante][i];
-                    filmeRecomendado = i;
-                }
+            System.out.print(mtz[idCli][i] + " ");
+        }
+        // System.out.println("\nAvaliações do usuário mais próximo (cliente " +
+        // idMenorDistancia + "):");
+        for (int i = 0; i < 20; i++) {
+            System.out.print(mtz[idMenorDistancia][i] + " ");
+        }
+        System.out.println();
+
+        // Recomendação baseada nos filmes avaliados pelo usuário mais próximo
+        // System.out.println("Filmes avaliados pelo usuário " + idMenorDistancia + "
+        // que o cliente " + idCli + " não viu:");
+        for (int i = 0; i < 20; i++) {
+            if (mtz[idMenorDistancia][i] > 0 && mtz[idCli][i] == 0) {
+                recomendacoes.add(nomeFilme(i));
+                System.out.println("Filme recomendado: " + nomeFilme(i)); // Print do filme recomendado
             }
         }
 
-        // Se encontrou um filme para recomendar
-        if (filmeRecomendado != -1) {
-            return "O filme recomendado para o cliente " + nomeCliente(idCli) + " é: " + nomeFilme(filmeRecomendado);
+        // Monta a mensagem de recomendação
+        if (recomendacoes.isEmpty()) {
+            System.out.println("Nenhum filme para recomendar ao cliente " + idCli); // Print caso não haja recomendações
+            return "Nenhum filme para recomendar ao cliente " + idCli;
+        } else {
+            StringBuilder msg = new StringBuilder("Filmes recomendados para o cliente " + idCli + ": ");
+            for (String filme : recomendacoes) {
+                msg.append(filme).append(", ");
+            }
+            // Remove a última vírgula e espaço
+            msg.setLength(msg.length() - 2);
+            System.out.println("Recomendações finais: " + msg.toString()); // Print das recomendações finais
+            return msg.toString();
         }
+    }
 
-        return "Nenhuma recomendação disponível para o cliente " + nomeCliente(idCli);
+    // Verifica se o usuário fez alguma avaliação (tem algum valor maior que 0 na
+    // linha da matriz)
+    private boolean usuarioFezAvaliacao(int idUsuario) {
+        for (int i = 0; i < 20; i++) {
+            if (mtz[idUsuario][i] > 0) {
+                return true; // Usuário fez pelo menos uma avaliação
+            }
+        }
+        return false; // Usuário não fez nenhuma avaliação
     }
 
     public double calculoEuclidiano(int idCli1, int idCli2) {
-        double soma = 0;
-        boolean temAvaliacoes = false;
-
-        // Calcular a distância euclidiana apenas com base nas avaliações feitas (onde a nota não é 0)
+        int soma = 0;
         for (int i = 0; i < 20; i++) {
-            if (mtz[idCli1][i] != 0 && mtz[idCli2][i] != 0) { // Verifica se ambos avaliaram o filme
-                temAvaliacoes = true;
-                soma += Math.pow(mtz[idCli1][i] - mtz[idCli2][i], 2);
-            }
+            int diferenca = mtz[idCli1][i] - mtz[idCli2][i];
+            soma += diferenca * diferenca; // Soma dos quadrados
         }
-
-        // Se não há avaliações suficientes, retorna um valor alto para ignorar essa pessoa
-        if (!temAvaliacoes) {
-            return Double.MAX_VALUE;
-        }
-
-        return Math.sqrt(soma); // Retorna a raiz quadrada da soma das diferenças quadradas
+        return Math.sqrt(soma); // Retorna a raiz quadrada para obter a distância euclidiana
     }
 
 }
